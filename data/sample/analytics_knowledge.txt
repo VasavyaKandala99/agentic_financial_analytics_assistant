@@ -1,0 +1,26 @@
+
+TREASURY ANALYTICS KNOWLEDGE BASE
+
+Transaction Volume:
+Transaction volume is the total value of payment transactions processed
+during a specified period.
+
+Failed Transaction Rate:
+Failed transaction rate is the percentage of attempted transactions that
+did not complete successfully.
+
+Liquidity Risk:
+Liquidity risk is the risk that an organization may not have sufficient
+cash or liquid assets to meet its short-term financial obligations.
+
+Foreign Exchange Exposure:
+Foreign exchange exposure represents financial risk caused by changes
+in currency exchange rates.
+
+Average Transaction Value:
+Average transaction value is calculated by dividing total transaction
+volume by the number of transactions.
+
+Settlement:
+Settlement is the process through which funds related to a transaction
+are transferred between participating financial institutions.

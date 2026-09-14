@@ -1,0 +1,34 @@
+
+FINANCIAL ANALYTICS KNOWLEDGE BASE
+
+Transaction Volume:
+The total monetary value of transactions processed during a specified period.
+
+Transaction Count:
+The total number of attempted transactions during a specified period.
+
+Average Transaction Value:
+Transaction volume divided by transaction count.
+
+Failed Transaction Rate:
+The percentage of attempted transactions that did not complete successfully.
+
+A rising failed transaction rate may require investigation into payment channels,
+countries, payment methods, technical failures, or operational issues.
+
+Liquidity Risk:
+The possibility that an organization may not have enough cash or liquid assets
+to meet short-term financial obligations.
+
+Foreign Exchange Exposure:
+Financial risk created when changes in currency exchange rates affect the value
+of transactions, balances, assets, or liabilities.
+
+ANALYTICAL GUIDELINES
+
+An increase in transaction volume should not automatically be interpreted as
+improved performance if transaction failures or operational risk also increase.
+
+Analysts should distinguish observed facts from possible explanations.
+
+Possible drivers should not be presented as confirmed causes without supporting data.
