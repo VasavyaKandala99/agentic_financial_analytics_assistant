@@ -2,3 +2,5 @@ openai==3.13.0
 openai-agents==0.22.2
 pandas==2.3.3
 python-dotenv
+fastapi
+uvicorn
