@@ -1,0 +1,16 @@
+.env
+.venv/
+.git/
+.github/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.db-wal
+*.db-shm
+.ipynb_checkpoints/
+notebooks/
+tests/
+evals/
+data/raw/
+financial_transactions.csv
