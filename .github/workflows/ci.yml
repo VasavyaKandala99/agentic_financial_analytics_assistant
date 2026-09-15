@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      OPENAI_VECTOR_STORE_ID: vs_test_ci
 
     steps:
       - name: Check out repository
