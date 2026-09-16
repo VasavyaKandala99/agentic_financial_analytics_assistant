@@ -52,13 +52,25 @@ The project is organized around specialized components:
 - Multi-Agent Orchestration
 - SQLiteSession
 - Pydantic
-- pytest
-- pandas
+- Pandas
+- FastAPI
+- Pytest
+- Docker
+- GitHub Actions
+- Google Cloud Platform (GCP)
+- Artifact Registry
+- Cloud Run
+- Workload Identity Federation
+- Google Secret Manager
 
 ## Project Structure
 
 ```text
 agentic-financial-analytics-assistant/
+├── .github/
+│   └── workflows/
+│       ├── ci.yml
+│       └── cd.yml
 ├── data/
 │   └── sample/
 ├── notebooks/
@@ -79,11 +91,126 @@ agentic-financial-analytics-assistant/
 │   │   └── input_guardrail.py
 │   ├── rag/
 │   │   └── knowledge_search.py
-│   └── tools/
-│       └── analytics_tools.py
+│   ├── tools/
+│   │   └── analytics_tools.py
+│   └── api.py
 ├── tests/
+│   ├── test_api.py
 │   └── test_smoke.py
+├── .dockerignore
 ├── .env.example
 ├── .gitignore
+├── Dockerfile
+├── README.md
 ├── requirements.txt
 └── requirements-dev.txt
+
+## API & Deployment
+
+The assistant is exposed through a FastAPI REST API and containerized with Docker for reproducible deployment.
+
+### API Endpoints
+
+- `GET /health` - Health check for the service
+- `POST /query` - Sends a financial analytics question to the guarded manager agent and returns the generated response
+
+### Deployment Architecture
+
+The application is deployed to Google Cloud using the following workflow:
+
+1. FastAPI exposes the agentic analytics application as a REST API.
+2. Docker packages the application and its dependencies into a portable container.
+3. Google Artifact Registry stores versioned container images.
+4. Google Cloud Run hosts the containerized API as a managed serverless service.
+5. Google Secret Manager securely provides application secrets at runtime.
+6. GitHub Actions runs CI tests and automates deployment from the `main` branch.
+7. Workload Identity Federation allows GitHub Actions to authenticate to Google Cloud without storing long-lived GCP service-account keys.
+
+### CI/CD
+
+The repository contains separate GitHub Actions workflows for continuous integration and continuous deployment:
+
+- **CI (`ci.yml`)** - Runs automated tests for repository changes.
+- **CD (`cd.yml`)** - On pushes to `main`, authenticates to Google Cloud, builds the Docker image, pushes it to Artifact Registry, and deploys the new revision to Cloud Run.
+
+This creates the deployment flow:
+
+`GitHub → GitHub Actions → Docker Build → Artifact Registry → Cloud Run`
+
+## Running Locally
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/VasavyaKandala99/agentic_financial_analytics_assistant.git
+cd agentic_financial_analytics_assistant
+```
+
+### 2. Create and activate a virtual environment
+
+```bash
+python -m venv .venv
+```
+
+On Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure environment variables
+
+Create a `.env` file based on `.env.example` and provide your own OpenAI credentials and vector store configuration.
+
+Never commit API keys or other secrets to the repository.
+
+### 5. Build the sample database
+
+```bash
+python scripts/build_sample_database.py
+```
+
+### 6. Start the FastAPI service
+
+```bash
+uvicorn src.api:app --host 0.0.0.0 --port 8000
+```
+
+The API will be available locally at:
+
+`http://localhost:8000`
+
+Interactive API documentation:
+
+`http://localhost:8000/docs`
+
+### Run with Docker
+
+```bash
+docker build -t agentic-financial-analytics-assistant .
+docker run --env-file .env -p 8000:8000 agentic-financial-analytics-assistant
+```
+
+### Run Tests
+
+```bash
+python -m pytest -q
+```
+
+## Engineering Highlights
+
+- Built a financial analytics assistant that combines deterministic SQL analytics with RAG-based business knowledge retrieval.
+- Implemented specialized agents and manager-agent orchestration using the OpenAI Agents SDK.
+- Added function/tool calling, agent handoffs, persistent session context, input guardrails, tracing, and response evaluation.
+- Exposed the agentic workflow through a FastAPI REST API with automated tests.
+- Containerized the application with Docker for reproducible local and cloud execution.
+- Deployed the containerized API to Google Cloud Run using Artifact Registry and Secret Manager.
+- Implemented CI/CD with GitHub Actions, including automated testing, container builds, image publishing, and Cloud Run deployment.
+- Configured Workload Identity Federation for keyless GitHub Actions authentication to Google Cloud.
+
