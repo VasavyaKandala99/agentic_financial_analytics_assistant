@@ -15,7 +15,6 @@ from agents import Runner
 from src.agents.data_agent import data_agent
 from src.agents.knowledge_agent import knowledge_agent
 
-
 class FinancialAssistantState(TypedDict):
     question: str
     route: Literal["data", "knowledge"]
@@ -29,9 +28,8 @@ class RouteDecision(BaseModel):
 class ApprovalDecision(BaseModel):
     requires_approval: bool
 
-client = OpenAI()
-
 def router_node(state: FinancialAssistantState):
+    client = OpenAI()
     response = client.responses.parse(
         model="gpt-5-mini",
         input=[
@@ -72,6 +70,7 @@ def knowledge_node(state: FinancialAssistantState):
     return {"answer": result.final_output}
 
 def approval_check_node(state: FinancialAssistantState):
+    client = OpenAI()
     response = client.responses.parse(
         model="gpt-5-mini",
         input=[
