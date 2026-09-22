@@ -1,5 +1,8 @@
-from src.langgraph_workflows.financial_assistant_graph import financial_assistant_graph
+import os
 
+os.environ.setdefault("OPENAI_API_KEY", "test-key")
+
+from src.langgraph_workflows.financial_assistant_graph import financial_assistant_graph
 
 def test_normal_request_completes_without_approval():
     config = {
