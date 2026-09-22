@@ -2,9 +2,38 @@ import os
 
 os.environ.setdefault("OPENAI_API_KEY", "test-key")
 
+from types import SimpleNamespace
+from unittest.mock import patch
+
 from src.langgraph_workflows.financial_assistant_graph import financial_assistant_graph
 
-def test_normal_request_completes_without_approval():
+def mock_parse(*args, **kwargs):
+    text_format = kwargs.get("text_format")
+    input_data = kwargs.get("input", [])
+    input_text = str(input_data)
+
+    if text_format.__name__ == "RouteDecision":
+        route = "data" if "transaction volume" in input_text.lower() else "knowledge"
+
+        return SimpleNamespace(
+            output_parsed=SimpleNamespace(route=route)
+        )
+
+    if text_format.__name__ == "ApprovalDecision":
+        requires_approval = "Recommend whether" in input_text
+
+        return SimpleNamespace(
+            output_parsed=SimpleNamespace(
+                requires_approval=requires_approval
+            )
+        )
+
+@patch(
+    "openai.resources.responses.responses.Responses.parse",
+    side_effect=mock_parse,
+)
+
+def test_normal_request_completes_without_approval(mock_openai):
     config = {
         "configurable": {
             "thread_id": "test-normal-request"
@@ -27,7 +56,12 @@ def test_normal_request_completes_without_approval():
     assert result["decision"] == ""
     assert "__interrupt__" not in result
 
-def test_recommendation_pauses_for_human_approval():
+@patch(
+    "openai.resources.responses.responses.Responses.parse",
+    side_effect=mock_parse,
+)
+
+def test_recommendation_pauses_for_human_approval(mock_openai):
     config = {
         "configurable": {
             "thread_id": "test-hitl-interrupt"
@@ -49,7 +83,12 @@ def test_recommendation_pauses_for_human_approval():
     assert result["decision"] == ""
     assert "__interrupt__" in result
 
-def test_hitl_approval_resumes_graph():
+@patch(
+    "openai.resources.responses.responses.Responses.parse",
+    side_effect=mock_parse,
+)
+    
+def test_hitl_approval_resumes_graph(mock_openai):
     from langgraph.types import Command
 
     config = {"configurable": {"thread_id": "pytest-hitl-approval"}}
