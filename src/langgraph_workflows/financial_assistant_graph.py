@@ -110,6 +110,24 @@ def human_approval_node(state: FinancialAssistantState):
 
     return {"decision": decision}
 
+def finalize_decision_node(state: FinancialAssistantState):
+    decision = state.get("decision", "")
+
+    if decision == "approved":
+        final_answer = (
+            f"{state['answer']}\n\n"
+            "Human review: APPROVED. The recommended action may proceed."
+        )
+    elif decision == "rejected":
+        final_answer = (
+            f"{state['answer']}\n\n"
+            "Human review: REJECTED. The recommended action should not proceed."
+        )
+    else:
+        final_answer = state["answer"]
+
+    return {"answer": final_answer}
+
 def choose_approval_path(state: FinancialAssistantState):
     if state["requires_approval"]:
         return "human_approval"
@@ -132,6 +150,7 @@ def build_financial_assistant_graph(
     builder.add_node("knowledge", knowledge)
     builder.add_node("approval_check", approval_check)
     builder.add_node("human_approval", human_approval_node)
+    builder.add_node("finalize_decision", finalize_decision_node)
 
     builder.add_edge(START, "router")
 
@@ -156,7 +175,8 @@ def build_financial_assistant_graph(
         },
     )
 
-    builder.add_edge("human_approval", END)
+    builder.add_edge("human_approval", "finalize_decision")
+    builder.add_edge("finalize_decision", END)
 
     checkpointer = InMemorySaver()
 
