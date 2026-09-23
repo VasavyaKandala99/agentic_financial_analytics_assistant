@@ -5,7 +5,9 @@ os.environ.setdefault("OPENAI_API_KEY", "test-key")
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from src.langgraph_workflows.financial_assistant_graph import financial_assistant_graph
+import src.langgraph_workflows.financial_assistant_graph as graph_module
+
+financial_assistant_graph = graph_module.financial_assistant_graph
 
 def mock_parse(*args, **kwargs):
     text_format = kwargs.get("text_format")
@@ -28,12 +30,14 @@ def mock_parse(*args, **kwargs):
             )
         )
 
-@patch(
-    "openai.resources.responses.responses.Responses.parse",
-    side_effect=mock_parse,
+@patch.object(
+    graph_module.OpenAI,
+    "responses",
+    create=True,
 )
 
 def test_normal_request_completes_without_approval(mock_openai):
+    mock_openai.parse.side_effect = mock_parse
     config = {
         "configurable": {
             "thread_id": "test-normal-request"
@@ -56,12 +60,14 @@ def test_normal_request_completes_without_approval(mock_openai):
     assert result["decision"] == ""
     assert "__interrupt__" not in result
 
-@patch(
-    "openai.resources.responses.responses.Responses.parse",
-    side_effect=mock_parse,
+@patch.object(
+    graph_module.OpenAI,
+    "responses",
+    create=True,
 )
 
 def test_recommendation_pauses_for_human_approval(mock_openai):
+    mock_openai.parse.side_effect = mock_parse
     config = {
         "configurable": {
             "thread_id": "test-hitl-interrupt"
@@ -83,12 +89,14 @@ def test_recommendation_pauses_for_human_approval(mock_openai):
     assert result["decision"] == ""
     assert "__interrupt__" in result
 
-@patch(
-    "openai.resources.responses.responses.Responses.parse",
-    side_effect=mock_parse,
+@patch.object(
+    graph_module.OpenAI,
+    "responses",
+    create=True,
 )
     
 def test_hitl_approval_resumes_graph(mock_openai):
+    mock_openai.parse.side_effect = mock_parse
     from langgraph.types import Command
 
     config = {"configurable": {"thread_id": "pytest-hitl-approval"}}
