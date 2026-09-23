@@ -119,43 +119,50 @@ def choose_approval_path(state: FinancialAssistantState):
 def choose_route(state: FinancialAssistantState):
     return state["route"]
 
-builder = StateGraph(FinancialAssistantState)
+def build_financial_assistant_graph(
+    router=router_node,
+    data=data_node,
+    knowledge=knowledge_node,
+    approval_check=approval_check_node,
+):
+    builder = StateGraph(FinancialAssistantState)
 
-builder.add_node("router", router_node)
-builder.add_node("data", data_node)
-builder.add_node("knowledge", knowledge_node)
-builder.add_node("approval_check", approval_check_node)
-builder.add_node("human_approval", human_approval_node)
+    builder.add_node("router", router)
+    builder.add_node("data", data)
+    builder.add_node("knowledge", knowledge)
+    builder.add_node("approval_check", approval_check)
+    builder.add_node("human_approval", human_approval_node)
 
-builder.add_edge(START, "router")
+    builder.add_edge(START, "router")
 
-builder.add_conditional_edges(
-    "router",
-    choose_route,
-    {
-        "data": "data",
-        "knowledge": "knowledge",
-    },
-)
+    builder.add_conditional_edges(
+        "router",
+        choose_route,
+        {
+            "data": "data",
+            "knowledge": "knowledge",
+        },
+    )
 
-# Both specialist paths go through the approval check
-builder.add_edge("data", "approval_check")
-builder.add_edge("knowledge", "approval_check")
+    builder.add_edge("data", "approval_check")
+    builder.add_edge("knowledge", "approval_check")
 
-builder.add_conditional_edges(
-    "approval_check",
-    choose_approval_path,
-    {
-        "human_approval": "human_approval",
-        "end": END,
-    },
-)
+    builder.add_conditional_edges(
+        "approval_check",
+        choose_approval_path,
+        {
+            "human_approval": "human_approval",
+            "end": END,
+        },
+    )
 
-builder.add_edge("human_approval", END)
+    builder.add_edge("human_approval", END)
 
-checkpointer = InMemorySaver()
+    checkpointer = InMemorySaver()
 
-financial_assistant_graph = builder.compile(
-    checkpointer=checkpointer
-)
+    return builder.compile(
+        checkpointer=checkpointer
+    )
 
+
+financial_assistant_graph = build_financial_assistant_graph()
