@@ -1,6 +1,8 @@
 # Agentic Financial Analytics Assistant
 
-An agentic financial analytics application that combines SQL-based analytics, retrieval-augmented generation (RAG), tool calling, multi-agent orchestration, persistent session memory, guardrails, and automated evaluation.
+An agentic financial analytics application that combines SQL-based analytics, retrieval-augmented generation (RAG), tool calling, multi-agent orchestration, persistent session memory, guardrails, automated evaluation, and LangGraph-based human-in-the-loop workflows.
+
+The application supports deterministic financial analysis, knowledge retrieval, agent routing, and approval-aware workflows that can pause for human review before recommended actions proceed.
 
 This project uses privacy-safe simulated financial transaction data and contains no proprietary or employer data.
 
@@ -17,6 +19,9 @@ The assistant can:
 - Use handoffs for specialist routing
 - Block out-of-scope requests with input guardrails
 - Evaluate responses for correctness, groundedness, and relevance
+- Orchestrate stateful analytical workflows with LangGraph
+- Determine when analytical recommendations require human review
+- Pause execution for human approval or rejection and resume the workflow from the saved state
 
 ## Architecture
 
@@ -40,12 +45,34 @@ The project is organized around specialized components:
 - **Evaluator Agent**  
   Scores responses for correctness, groundedness, and relevance.
 
+### LangGraph Human-in-the-Loop Workflow
+
+A separate LangGraph workflow adds explicit stateful orchestration and human oversight for analytical recommendations.
+
+The workflow:
+
+1. Routes each question to the Data Analysis Specialist or Business Knowledge Specialist.
+2. Executes the selected specialist and captures the analytical response in graph state.
+3. Evaluates whether the response requires human review.
+4. Completes directly when human approval is not required.
+5. Uses a LangGraph interrupt when human review is required.
+6. Waits for an explicit `approved` or `rejected` decision.
+7. Resumes from the saved graph state and finalizes the response based on the human decision.
+
+Workflow:
+
+`User Question → LangGraph Router → Data Analysis / Business Knowledge → Approval Check → Human Review Required? → HITL Interrupt → Approve / Reject → Resume Graph → Finalize Decision`
+
+This workflow uses LangGraph checkpointing to preserve execution state across the human-review interruption.
+
 ## Tech Stack
 
 - Python
 - SQL / SQLite
 - OpenAI API
 - OpenAI Agents SDK
+- LangGraph
+- Human-in-the-loop (HITL) Workflows
 - Retrieval-Augmented Generation (RAG)
 - Vector Search / File Search
 - Function and Tool Calling
@@ -89,6 +116,9 @@ agentic-financial-analytics-assistant/
 │   │   └── evaluator.py
 │   ├── guardrails/
 │   │   └── input_guardrail.py
+│   ├── langgraph_workflows/
+│   │   ├── financial_assistant_graph.py
+│   │   └── run_financial_graph.py
 │   ├── rag/
 │   │   └── knowledge_search.py
 │   ├── tools/
@@ -96,6 +126,7 @@ agentic-financial-analytics-assistant/
 │   └── api.py
 ├── tests/
 │   ├── test_api.py
+│   ├── test_langgraph_workflow.py
 │   └── test_smoke.py
 ├── .dockerignore
 ├── .env.example
@@ -108,6 +139,25 @@ agentic-financial-analytics-assistant/
 ## API & Deployment
 
 The assistant is exposed through a FastAPI REST API and containerized with Docker for reproducible deployment.
+
+### Run the LangGraph Human-in-the-Loop Workflow
+
+Run the interactive LangGraph workflow:
+
+```bash
+python -m src.langgraph_workflows.run_financial_graph
+```
+
+Enter a financial analytics question when prompted.
+
+For requests that do not require human review, the workflow completes normally. When a recommendation requires human oversight, the graph pauses execution and prompts for an explicit approval decision:
+
+```text
+--- HUMAN APPROVAL REQUIRED ---
+Approve or reject?
+```
+
+Enter `approved` or `rejected` to resume the workflow. The final response reflects the human decision.
 
 ### API Endpoints
 
@@ -207,6 +257,8 @@ python -m pytest -q
 
 - Built a financial analytics assistant that combines deterministic SQL analytics with RAG-based business knowledge retrieval.
 - Implemented specialized agents and manager-agent orchestration using the OpenAI Agents SDK.
+- Added LangGraph-based stateful orchestration with explicit routing between data-analysis and business-knowledge specialists.
+- Implemented a human-in-the-loop approval workflow using interrupts and checkpointing, allowing recommendation-driven workflows to pause for review and resume with an approved or rejected decision.
 - Added function/tool calling, agent handoffs, persistent session context, input guardrails, tracing, and response evaluation.
 - Exposed the agentic workflow through a FastAPI REST API with automated tests.
 - Containerized the application with Docker for reproducible local and cloud execution.
