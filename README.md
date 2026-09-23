@@ -1,4 +1,4 @@
-# Agentic Financial Analytics Assistant
+# Agentic Financial Analytics Assistant 
 
 An agentic financial analytics application that combines SQL-based analytics, retrieval-augmented generation (RAG), tool calling, multi-agent orchestration, persistent session memory, guardrails, automated evaluation, and LangGraph-based human-in-the-loop workflows.
 
