@@ -25,6 +25,24 @@ The assistant can:
 
 ## Architecture
 
+```mermaid
+flowchart TD
+    U([User question]) --> API[FastAPI · POST /query]
+    API --> G{Input guardrail}
+    G -->|Out of scope| R[Request blocked]
+    G -->|In scope| M[Manager agent]
+    M -->|Quantitative| D[Data Analysis Specialist<br/>SQL tools · monthly KPIs · country analysis]
+    M -->|Conceptual| K[Business Knowledge Specialist<br/>RAG · file search]
+    D --> E[Evaluator agent<br/>correctness · groundedness · relevance]
+    K --> E
+    E --> H{Human review needed?}
+    H -->|No| A[Final answer]
+    H -->|Yes| I[LangGraph interrupt<br/>checkpoint saved]
+    I -->|Approved| A
+    I -->|Rejected| A2[Declined / revised response]
+    A --> S[(SQLite session memory)]
+```
+
 The project is organized around specialized components:
 
 - **Data Analysis Specialist**  
