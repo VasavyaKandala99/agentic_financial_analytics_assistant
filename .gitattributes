@@ -1,0 +1,3 @@
+# Treat Jupyter notebooks as documentation so GitHub Linguist
+# counts Python (not Notebook) as this repo's primary language.
+*.ipynb linguist-documentation
