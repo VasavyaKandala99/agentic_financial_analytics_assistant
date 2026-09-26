@@ -1,5 +1,10 @@
 # Agentic Financial Analytics Assistant 
 
+[![CI](https://github.com/VasavyaKandala99/agentic_financial_analytics_assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/VasavyaKandala99/agentic_financial_analytics_assistant/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![OpenAI Agents SDK](https://img.shields.io/badge/openai__agents-0.22.2-412991)
+![LangGraph](https://img.shields.io/badge/langgraph-1.2.12-orange)
+
 An agentic financial analytics application that combines SQL-based analytics, retrieval-augmented generation (RAG), tool calling, multi-agent orchestration, persistent session memory, guardrails, automated evaluation, and LangGraph-based human-in-the-loop workflows.
 
 The application supports deterministic financial analysis, knowledge retrieval, agent routing, and approval-aware workflows that can pause for human review before recommended actions proceed.
