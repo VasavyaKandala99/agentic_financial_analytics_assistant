@@ -2,7 +2,7 @@
 
 from agents import Agent
 
-from src.agents.data_agent import data_agent
+from src.agents.mcp_data_agent import mcp_data_agent
 from src.agents.knowledge_agent import knowledge_agent
 
 
@@ -18,7 +18,7 @@ manager_agent = Agent(
         "Do not invent unsupported numbers, definitions, or causal explanations."
     ),
     tools=[
-        data_agent.as_tool(
+        mcp_data_agent.as_tool(
             tool_name="data_analysis_specialist",
             tool_description=(
                 "Use for quantitative analysis of transaction data, monthly KPIs, "
