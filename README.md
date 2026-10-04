@@ -60,7 +60,7 @@ flowchart TD
 The project is organized around specialized components:
 
 - **Data Analysis Specialist**  
-  UUses an MCP-backed agent to discover and invoke SQL-backed tools for monthly KPIs and country-level transaction analysis.
+  Uses an MCP-backed agent to discover and invoke SQL-backed tools for monthly KPIs and country-level transaction analysis.
 
 - **Business Knowledge Specialist**  
   Uses RAG and hosted file search to retrieve financial definitions and supporting business knowledge.
