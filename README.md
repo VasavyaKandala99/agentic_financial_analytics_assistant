@@ -5,7 +5,7 @@
 ![OpenAI Agents SDK](https://img.shields.io/badge/openai__agents-0.22.2-412991)
 ![LangGraph](https://img.shields.io/badge/langgraph-1.2.12-orange)
 
-AAn agentic financial analytics application that combines SQL-based analytics,
+An agentic financial analytics application that combines SQL-based analytics,
 retrieval-augmented generation (RAG), tool calling, Model Context Protocol (MCP),
 multi-agent orchestration, persistent session memory, guardrails, automated
 evaluation, and LangGraph-based human-in-the-loop workflows.
