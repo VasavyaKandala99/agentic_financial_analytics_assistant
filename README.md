@@ -5,9 +5,15 @@
 ![OpenAI Agents SDK](https://img.shields.io/badge/openai__agents-0.22.2-412991)
 ![LangGraph](https://img.shields.io/badge/langgraph-1.2.12-orange)
 
-An agentic financial analytics application that combines SQL-based analytics, retrieval-augmented generation (RAG), tool calling, multi-agent orchestration, persistent session memory, guardrails, automated evaluation, and LangGraph-based human-in-the-loop workflows.
+AAn agentic financial analytics application that combines SQL-based analytics,
+retrieval-augmented generation (RAG), tool calling, Model Context Protocol (MCP),
+multi-agent orchestration, persistent session memory, guardrails, automated
+evaluation, and LangGraph-based human-in-the-loop workflows.
 
-The application supports deterministic financial analysis, knowledge retrieval, agent routing, and approval-aware workflows that can pause for human review before recommended actions proceed.
+The application supports deterministic financial analysis, knowledge retrieval,
+agent routing, MCP-based analytics tool discovery and invocation, and
+approval-aware workflows that can pause for human review before recommended
+actions proceed.
 
 This project uses privacy-safe simulated financial transaction data and contains no proprietary or employer data.
 
@@ -17,6 +23,7 @@ The assistant can:
 
 - Analyze monthly transaction KPIs from a SQL-backed dataset
 - Compare country-level transaction performance
+- Discover and invoke SQL-backed analytics capabilities through a Model Context Protocol (MCP) server
 - Retrieve financial definitions and analytical guidance from a vector-store knowledge base
 - Route questions to specialized agents
 - Coordinate multiple specialists through a manager-agent architecture
@@ -36,7 +43,9 @@ flowchart TD
     API --> G{Input guardrail}
     G -->|Out of scope| R[Request blocked]
     G -->|In scope| M[Manager agent]
-    M -->|Quantitative| D[Data Analysis Specialist<br/>SQL tools · monthly KPIs · country analysis]
+    M -->|Quantitative| D[Data Analysis Specialist<br/>MCP-backed analytics agent]
+    D -->|MCP stdio| MCP[MCP Server<br/>monthly_kpis · country_breakdown]
+    MCP --> DB[(SQLite analytics.db)]
     M -->|Conceptual| K[Business Knowledge Specialist<br/>RAG · file search]
     D --> E[Evaluator agent<br/>correctness · groundedness · relevance]
     K --> E
@@ -51,13 +60,13 @@ flowchart TD
 The project is organized around specialized components:
 
 - **Data Analysis Specialist**  
-  Uses SQL-backed tools for monthly KPIs and country-level transaction analysis.
+  UUses an MCP-backed agent to discover and invoke SQL-backed tools for monthly KPIs and country-level transaction analysis.
 
 - **Business Knowledge Specialist**  
   Uses RAG and hosted file search to retrieve financial definitions and supporting business knowledge.
 
 - **Financial Analytics Manager**  
-  Coordinates the data and knowledge specialists using Agents-as-Tools.
+  Coordinates the MCP-backed data specialist and RAG-based knowledge specialist using Agents-as-Tools.
 
 - **Triage / Handoff Agents**  
   Demonstrate decentralized routing between specialists.
@@ -94,6 +103,7 @@ This workflow uses LangGraph checkpointing to preserve execution state across th
 - SQL / SQLite
 - OpenAI API
 - OpenAI Agents SDK
+- Model Context Protocol (MCP)
 - LangGraph
 - Human-in-the-loop (HITL) Workflows
 - Retrieval-Augmented Generation (RAG)
@@ -125,16 +135,22 @@ agentic-financial-analytics-assistant/
 │   └── sample/
 ├── notebooks/
 │   └── development.ipynb
-├── scripts/
-│   └── build_sample_database.py
-├── src/
-│   ├── agents/
-│   │   ├── data_agent.py
-│   │   ├── guarded_manager_agent.py
-│   │   ├── handoff_agents.py
-│   │   ├── knowledge_agent.py
-│   │   ├── manager_agent.py
-│   │   └── session.py
+scripts/
+├── build_sample_database.py
+├── test_mcp_agent.py
+├── test_mcp_client.py
+└── test_mcp_manager.py
+src/
+├── mcp/
+│   └── server.py
+├── agents/
+│   ├── data_agent.py
+│   ├── guarded_manager_agent.py
+│   ├── handoff_agents.py
+│   ├── knowledge_agent.py
+│   ├── manager_agent.py
+│   ├── mcp_data_agent.py
+│   └── session.py
 │   ├── evaluation/
 │   │   └── evaluator.py
 │   ├── guardrails/
@@ -158,6 +174,30 @@ agentic-financial-analytics-assistant/
 ├── README.md
 ├── requirements.txt
 └── requirements-dev.txt
+
+## MCP Integration
+
+The quantitative analytics path is exposed through a Model Context Protocol (MCP) server. The MCP-backed Data Analysis Specialist discovers and invokes the available analytics capabilities instead of directly coupling the manager workflow to the underlying Python tool implementations.
+
+Exposed MCP tools:
+
+- `monthly_kpis` — returns monthly transaction KPIs
+- `country_breakdown` — returns country-level transaction performance
+
+The application uses a local stdio MCP connection:
+
+```text
+Manager Agent
+    ↓
+MCP Data Analysis Specialist
+    ↓
+MCPServerStdio
+    ↓
+Financial Analytics MCP Server
+    ↓
+monthly_kpis / country_breakdown
+    ↓
+SQLite analytics.db
 
 ## API & Deployment
 
@@ -280,6 +320,7 @@ python -m pytest -q
 
 - Built a financial analytics assistant that combines deterministic SQL analytics with RAG-based business knowledge retrieval.
 - Implemented specialized agents and manager-agent orchestration using the OpenAI Agents SDK.
+- Integrated Model Context Protocol (MCP) into the multi-agent architecture, exposing SQL-backed analytics capabilities through a standardized MCP server and routing manager-level quantitative requests through an MCP-backed data specialist.
 - Added LangGraph-based stateful orchestration with explicit routing between data-analysis and business-knowledge specialists.
 - Implemented a human-in-the-loop approval workflow using interrupts and checkpointing, allowing recommendation-driven workflows to pause for review and resume with an approved or rejected decision.
 - Added function/tool calling, agent handoffs, persistent session context, input guardrails, tracing, and response evaluation.
